@@ -297,42 +297,44 @@ class Server extends ServerContainer implements IServerContainer {
 				\OC_Hook::emit('OC_User', 'pre_createUser', ['run' => true, 'uid' => $uid, 'password' => $password]);
 			});
 			$userSession->listen('\OC\User', 'postCreateUser', function ($user, $password) {
-				/** @var $user \OC\User\User */
-				\OC_Hook::emit('OC_User', 'post_createUser', ['uid' => $user->getUID(), 'password' => $password]);
+				$event = new GenericEvent(null, ['uid' => $user->getUID(), 'password' => $password]);
+				\OC::$server->getEventDispatcher()->dispatch('\OC\User\Manager::createUser', $event);
 			});
 			$userSession->listen('\OC\User', 'preDelete', function ($user) {
-				/** @var $user \OC\User\User */
-				\OC_Hook::emit('OC_User', 'pre_deleteUser', ['run' => true, 'uid' => $user->getUID()]);
+				$event = new GenericEvent(null, ['run' => true, 'uid' => $user->getUID()]);
+				\OC::$server->getEventDispatcher()->dispatch('\OC\User\User::deletePre', $event);
 			});
 			$userSession->listen('\OC\User', 'postDelete', function ($user) {
-				/** @var $user \OC\User\User */
-				\OC_Hook::emit('OC_User', 'post_deleteUser', ['uid' => $user->getUID()]);
+				$event = new GenericEvent(null, ['uid' => $user->getUID()]);
+				\OC::$server->getEventDispatcher()->dispatch('\OC\User\User::deletePost', $event);
 			});
 			$userSession->listen('\OC\User', 'preSetPassword', function ($user, $password, $recoveryPassword) {
 				/** @var $user \OC\User\User */
 				\OC_Hook::emit('OC_User', 'pre_setPassword', ['run' => true, 'uid' => $user->getUID(), 'password' => $password, 'recoveryPassword' => $recoveryPassword]);
 			});
 			$userSession->listen('\OC\User', 'postSetPassword', function ($user, $password, $recoveryPassword) {
-				/** @var $user \OC\User\User */
-				\OC_Hook::emit('OC_User', 'post_setPassword', ['run' => true, 'uid' => $user->getUID(), 'password' => $password, 'recoveryPassword' => $recoveryPassword]);
+				$event = new GenericEvent(null, ['run' => true, 'user' => $user ,'uid' => $user->getUID(), 'password' => $password, 'recoveryPassword' => $recoveryPassword]);
+				\OC::$server->getEventDispatcher()->dispatch('\OC\User\User::post_setPassword', $event);
 			});
 			$userSession->listen('\OC\User', 'preLogin', function ($uid, $password) {
-				\OC_Hook::emit('OC_User', 'pre_login', ['run' => true, 'uid' => $uid, 'password' => $password]);
+				$event = new GenericEvent(null, ['run' => true, 'uid' => $uid, 'password' => $password]);
+				\OC::$server->getEventDispatcher()->dispatch('\OC\User\Session::pre_login', $event);
 			});
 			$userSession->listen('\OC\User', 'postLogin', function ($user, $password) {
-				/** @var $user \OC\User\User */
-				\OC_Hook::emit('OC_User', 'post_login', ['run' => true, 'uid' => $user->getUID(), 'password' => $password]);
+				$event = new GenericEvent(null, ['run' => true, 'uid' => $user->getUID(), 'password' => $password]);
+				\OC::$server->getEventDispatcher()->dispatch('\OC\User\Session::post_login', $event);
 			});
 			$userSession->listen('\OC\User', 'preLogout', function () {
 				$event = new GenericEvent(null, []);
 				\OC::$server->getEventDispatcher()->dispatch('\OC\User\Session::pre_logout', $event);
 			});
 			$userSession->listen('\OC\User', 'logout', function () {
-				\OC_Hook::emit('OC_User', 'logout', []);
+				$event = new GenericEvent(null);
+				\OC::$server->getEventDispatcher()->dispatch('\OC\User\Session::logout', $event);
 			});
 			$userSession->listen('\OC\User', 'changeUser', function ($user, $feature, $value) {
-				/** @var $user \OC\User\User */
-				\OC_Hook::emit('OC_User', 'changeUser', ['run' => true, 'user' => $user, 'feature' => $feature, 'value' => $value]);
+				$event = new GenericEvent(null, ['run' => true, 'user' => $user, 'feature' => $feature, 'value' => $value]);
+				\OC::$server->getEventDispatcher()->dispatch('\OC\User\User::triggerChange',$event);
 			});
 			return $userSession;
 		});

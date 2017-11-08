@@ -334,7 +334,8 @@ class Manager extends PublicEmitter implements IUserManager {
 				$backend->createUser($uid, $password);
 				$account = $this->newAccount($uid, $backend);
 				$user = $this->getUserObject($account);
-				$this->emit('\OC\User', 'postCreateUser', [$user, $password]);
+				$event = new GenericEvent(null, ['uid' => $user->getUID(), 'password' => $password]);
+				\OC::$server->getEventDispatcher()->dispatch('\OC\User\Manager::createUser', $event);
 				return $user;
 			}
 		}
