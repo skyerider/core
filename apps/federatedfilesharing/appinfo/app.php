@@ -30,7 +30,8 @@ use OCP\Share\Events\DeclineShare;
 $manager = \OC::$server->getNotificationManager();
 $manager->registerNotifier(function() {
 	return new Notifier(
-		\OC::$server->getL10NFactory()
+		\OC::$server->getL10NFactory(),
+		\OC::$server->getEventDispatcher()
 	);
 }, function() {
 	$l = \OC::$server->getL10N('files_sharing');

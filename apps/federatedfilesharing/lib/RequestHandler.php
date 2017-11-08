@@ -34,6 +34,7 @@ use OCP\IDBConnection;
 use OCP\IRequest;
 use OCP\IUserManager;
 use OCP\Share;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class RequestHandler
@@ -165,6 +166,8 @@ class RequestHandler {
 					$sharedByFederatedId = $ownerFederatedId;
 				}
 
+				$event = new GenericEvent(null, ['name' => $name, 'targetuser' => $sharedByFederatedId]);
+				\OC::$server->getEventDispatcher()->dispatch('\OCA\FederatedFileSharing::remote_shareReceived', $event);
 				\OC::$server->getActivityManager()->publishActivity(
 					Activity::FILES_SHARING_APP, Activity::SUBJECT_REMOTE_SHARE_RECEIVED, [$ownerFederatedId, trim($name, '/')], '', [],
 					'', '', $shareWith, Activity::TYPE_REMOTE_SHARE, Activity::PRIORITY_LOW);

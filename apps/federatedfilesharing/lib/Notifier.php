@@ -25,16 +25,21 @@ namespace OCA\FederatedFileSharing;
 
 use OCP\Notification\INotification;
 use OCP\Notification\INotifier;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 class Notifier implements INotifier {
 	/** @var \OCP\L10N\IFactory */
 	protected $factory;
+	/** @var EventDispatcherInterface  */
+	private $dispatcher;
 
 	/**
 	 * @param \OCP\L10N\IFactory $factory
 	 */
-	public function __construct(\OCP\L10N\IFactory $factory) {
+	public function __construct(\OCP\L10N\IFactory $factory, EventDispatcherInterface $eventDispatcher) {
 		$this->factory = $factory;
+		$this->dispatcher = $eventDispatcher;
 	}
 
 	/**
@@ -63,6 +68,8 @@ class Notifier implements INotifier {
 					$notification->setParsedSubject(
 						(string)$l->t('You received "/%3$s" as a remote share from %1$s', $params)
 					);
+					$event = new GenericEvent(null, ['name' => $params[2], 'targetuser' => $params[0]]);
+					$this->dispatcher->dispatch('\OCA\FederatedFileSharing::local_shareReceived', $event);
 				}
 
 				// Deal with the actions for a known subject

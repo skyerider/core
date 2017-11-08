@@ -33,6 +33,7 @@ use OCA\FederatedFileSharing\RequestHandler;
 use OCP\IUserManager;
 use OCP\Share\IShare;
 use OC\HTTPHelper;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class RequestHandlerTest
@@ -161,7 +162,15 @@ class RequestHandlerTest extends TestCase {
 		$_POST['shareWith'] = self::TEST_FILES_SHARING_API_USER2;
 		$_POST['remoteId'] = 1;
 
+		$called = array();
+		\OC::$server->getEventDispatcher()->addListener('\OCA\FederatedFileSharing::remote_shareReceived', function ($event) use (&$called) {
+			$called[] = '\OCA\FederatedFileSharing::remote_shareReceived';
+			array_push($called, $event);
+		});
+
 		$result = $this->s2s->createShare(null);
+
+		$this->assertTrue($called[1] instanceof GenericEvent);
 
 		$this->assertTrue($result->succeeded());
 

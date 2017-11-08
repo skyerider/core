@@ -35,6 +35,7 @@ use OCP\Notification\IManager;
 use OCP\Share\Events\AcceptShare;
 use OCP\Share\Events\DeclineShare;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 class Manager {
 	const STORAGE = '\OCA\Files_Sharing\External\Storage';
@@ -406,7 +407,14 @@ class Manager {
 	 * @return array list of open server-to-server shares
 	 */
 	public function getOpenShares() {
-		return $this->getShares(false);
+		$sharesResult = $this->getShares(false);
+		foreach ($sharesResult as $share) {
+			$targetuser = $share['owner'] . '@' . rtrim($share['remote']);
+			$name = trim($share['name']);
+			$event = new GenericEvent(null, ['name' => $name, 'targetuser' => $targetuser]);
+			$this->eventDispatcher->dispatch('\OCA\Files_Sharing::openShares', $event);
+		}
+		return $sharesResult;
 	}
 
 	/**

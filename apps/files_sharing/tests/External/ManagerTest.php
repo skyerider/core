@@ -32,6 +32,7 @@ use OCP\Share\Events\AcceptShare;
 use OCP\Share\Events\DeclineShare;
 use OCP\Share\Events\ShareEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 use Test\Traits\UserTrait;
 
 /**
@@ -107,6 +108,11 @@ class ManagerTest extends TestCase {
 		$shareData3 = $shareData1;
 		$shareData3['token'] = 'token3';
 
+		$called = array();
+		$genericEvent = new GenericEvent(null, ['name' => '/SharedFolder','targetuser' => 'foobar@http://localhost']);
+		$this->eventDispatcher->expects($this->at(0))
+			->method('dispatch')
+			->with('\OCA\Files_Sharing::openShares', $genericEvent);
 		// Add a share for "user"
 		$this->assertSame(null, call_user_func_array([$this->manager, 'addShare'], $shareData1));
 		$openShares = $this->manager->getOpenShares();
